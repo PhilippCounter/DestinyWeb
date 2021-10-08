@@ -41,7 +41,7 @@ import {
 import axios, { AxiosPromise } from 'axios';
 import { apiSecret } from './apiSecret';
 
-export const baseUrl = typeof Window === 'undefined' ? 'http://localhost:3000' : '';
+export const baseUrl = typeof Window === 'undefined' ? process.env.baseUrl ? process.env.baseUrl : 'http://localhost:3000' : '';
 
 async function $http(config: HttpClientConfig): Promise<AxiosPromise> {
 
