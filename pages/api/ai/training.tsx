@@ -10,6 +10,8 @@ import {
     PeriodType
 } from '../../../services/bungieEnum';
 
+import { allowedSpecialEndpoints } from '../../../services/apiSecret';
+
 const initialModelOptions = {
     optimizer: "adam",
     learningRate: 0.05,
@@ -34,9 +36,13 @@ interface miniHistory {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const fs = require('fs');
 
+    if ( !allowedSpecialEndpoints ) {
+        res.status(405).json( [ 'not allowed' ] );
+        return;
+    }
+
     const testPlayerMembershipId = "4611686018429254495";
 
-    
     const history = await getHistory( 2, testPlayerMembershipId, "2305843009261515325", { page: 0, count: 200, mode: ActivityModeType.TrialsOfOsiris } ) as miniHistory[];
     console.log('got history', history.length);
 

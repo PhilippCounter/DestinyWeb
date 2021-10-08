@@ -95,10 +95,7 @@ export default function Home() {
             { prediction && <>
                 <Col>
                     <div style={{ fontSize: '30px' }}>
-                        
-                        <div>Team A: {prediction[1]}</div>
-                        <div>Team B: { prediction[1] == 'win' ? 'loss' : 'win'}</div>
-                        <div style={{ marginTop: '20px', fontSize: '20px' }}>{prediction[0]}% Confidence</div>
+                        <div style={{ marginTop: '20px', fontSize: '20px' }}>Team A has a {prediction[0]}% chance of winning</div>
                     </div>
                 </Col>
             </>}

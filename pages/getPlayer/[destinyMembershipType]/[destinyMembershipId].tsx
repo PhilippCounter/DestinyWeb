@@ -63,7 +63,6 @@ export default function PlayerName( props: IProps ) {
                     <Card.Body>
                         { player.characters.data ? Object.keys( player.characters.data ).map( (_charId, idx) => {
                             let _character = player.characters && player.characters.data ? player.characters.data[_charId] : null;
-                            console.log( _character );
                             return <div className={ "character-buttons " + ( _charId == charId ? 'active' : '' ) } key={ charId + '_' + idx } onClick={() => setCharId(_charId)}>
                                 <div style={{ fontSize: '30px' }} >{ _character ? props.manifest.DestinyClassDefinition[_character.classHash].displayProperties.name : null }</div> 
                                 <img  src={ "https://www.bungie.net/" + ( _character ? _character.emblemPath : '' ) }></img>

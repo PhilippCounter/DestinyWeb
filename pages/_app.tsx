@@ -14,15 +14,27 @@ import '../styles/bootstrap-night.css';
 import 'react-pro-sidebar/dist/css/styles.css';
 import axios from 'axios';
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+interface IProps extends AppProps {
+  allowedSpecialEndpoints: string|undefined
+}
+
+function MyApp({ Component, pageProps, allowedSpecialEndpoints }: IProps) {
 
   const [ loading, setLoading ] = useState<boolean>( false );
 
   const storeManifest = async () => {
-    const response = (await axios({
+    await axios({
         method: 'PUT',
         url: baseUrl + '/api/manifest',
-    }) ).data;
+    });
+    setLoading(false);
+  }
+
+  const trainModel = async () => {
+    await axios({
+        method: 'PUT',
+        url: baseUrl + '/api/ai/training',
+    });
     setLoading(false);
   }
 
@@ -39,19 +51,25 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     </Head>
     <ProSidebar>
       <Menu iconShape="square">
-        <MenuItem ><Link href="/" > Destiny Web Api </Link></MenuItem>
-        <SubMenu title="Tools" >
-          <MenuItem><Link href="/getPlayer" > search Player </Link></MenuItem>
-          <MenuItem style={{ cursor: 'pointer' }} onClick={ () => { setLoading(true); storeManifest() } }>
-            <label style={{float:'left', marginRight: '10px', cursor: 'pointer'}}>update Manifest</label>
-            { loading ? <Loader
-                type="Puff"
-                color="#00BFFF"
-                height={15}
-                width={15}
-            /> : null }
-          </MenuItem>
+        <MenuItem ><Link href="/" >Destiny Web Api</Link></MenuItem>
+        <SubMenu title="User Tools" >
+          <MenuItem className="mt-3" ><Link href="/getPlayer" >Search Player</Link></MenuItem>
+          <MenuItem className="mt-3" ><Link href="/predictResults" >Match Prediction</Link></MenuItem>
         </SubMenu>
+        { allowedSpecialEndpoints && <SubMenu title="Admin Tools" >
+          <MenuItem style={{ cursor: 'pointer' }} onClick={ () => { setLoading(true); storeManifest() } }>
+            <label style={{float:'left', marginRight: '10px', cursor: 'pointer'}}>Update Manifest</label>
+          </MenuItem>
+          <MenuItem style={{ cursor: 'pointer' }} onClick={ () => { setLoading(true); trainModel() } }>
+            <label style={{float:'left', marginRight: '10px', cursor: 'pointer'}}>Train Ai Model</label>
+          </MenuItem>
+          <div style={{ marginLeft: '15px' }} >{ loading && <Loader
+              type="Puff"
+              color="#00BFFF"
+              height={15}
+              width={15}
+          /> }</div>
+        </SubMenu> }
       </Menu>
     </ProSidebar>
     <main className={"main-app"} style={{
@@ -66,3 +84,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   </div>
 }
+
+MyApp.getInitialProps = () => {
+  const { allowedSpecialEndpoints } = require('../services/apiSecret');
+  return { allowedSpecialEndpoints };
+}
+
+export default MyApp;

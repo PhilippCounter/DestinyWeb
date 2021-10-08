@@ -29,8 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     }
 
-    console.log( formated_players );
-
     const data       = model.predict( tensor([ flattenTheSet({ players: formated_players }) ]) ) as Tensor;
     const prediction = binarize( data ).as1D() as Tensor;
 
