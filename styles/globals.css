@@ -1,0 +1,49 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.activity-table {
+  table-layout: fixed;
+  width: 600px;
+}
+
+.activity-tr .activity-td .player-entries {
+  height: 50px;
+  overflow: hidden;
+}
+
+.activity-tr:hover .activity-td .player-entries {
+  height: 100%;
+  overflow: visible;
+}
+
+.character-buttons {
+  text-align: center;
+  background-color: #3b3b3b;
+  padding: 10px 20px 20px 20px;
+  width: 155px;
+  float: left;
+  margin: 10px;
+  cursor: pointer;
+}
+
+.character-buttons.active {
+  background-color: #222;
+}
+
+.character-buttons img {
+  margin-top: 10px;
+}
