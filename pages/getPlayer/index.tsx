@@ -32,7 +32,6 @@ export default function PlayerSearch() {
 
     const getPlayerIcon = async ( profile: DestinyUserSearchResponseDetail ) : Promise<void> => {
         try {
-            console.log( profile.destinyMemberships[0].membershipType, profile.destinyMemberships[0].membershipId );
             const destinyProfileResponse = ( await apiGetProfile( profile.destinyMemberships[0].membershipType, profile.destinyMemberships[0].membershipId ) ).Response;
             const characters   = destinyProfileResponse.characters.data;
             if ( characters ) setPlayerIcons( { 

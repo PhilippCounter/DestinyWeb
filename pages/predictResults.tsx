@@ -18,8 +18,6 @@ interface IReducerAction {
     text            : string,
 }
 
-
-
 function playerReducer ( state : IReducerState, action : IReducerAction ) : IReducerState {
     state[ action.teamName ][ action.playerIndex ][ action.type ] = action.text;
     return { ...state };

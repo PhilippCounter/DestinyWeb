@@ -226,8 +226,20 @@ export interface DestinyUserSearchResponseDetail extends UserSearchResponseDetai
 }
 
 export const getPlayersByName = async ( playerName: string ): Promise<DestinyUserSearchResponseDetail[]> => {
+
+    if ( playerName.indexOf('#') >= 0 ) {
+        const profileResponse = ( await apiGetDestinyProfile( playerName.replace('#', '%23') ) ).Response;
+        if ( !profileResponse[0] ) return [];
+        return [{
+            bungieGlobalDisplayName     : profileResponse[0].bungieGlobalDisplayName,
+            bungieGlobalDisplayNameCode : profileResponse[0].bungieGlobalDisplayNameCode,
+            destinyMemberships          : profileResponse,
+        }];
+    }
+
     const profileResponse = ( await apiGetBungieProfile( playerName.replace('#', '%23') ) ).Response;
     const searchResults = profileResponse.searchResults as DestinyUserSearchResponseDetail[];    
+    
     return searchResults;
 }
 
@@ -256,8 +268,6 @@ export const getPlayerMembership = async ( destinyMembershipType: BungieMembersh
 
         }
     }
-
-    // profile['accountStats'] = ( await apiGetHistoricalStatsForAccount( profile.membershipType, profile.membershipId ) ).Response;
 
     return profile;
 }
