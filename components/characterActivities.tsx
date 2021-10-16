@@ -148,7 +148,7 @@ export default function CharacterActivities( props: IProps ) {
             let memberId    = entry.player.destinyUserInfo.membershipId;
             let memberType  = entry.player.destinyUserInfo.membershipType;
 
-            let teamid = entry.values.team.basic.value;
+            let teamid = (entry.values.team || { basic: { value: '18' } } ).basic.value;
             if ( teamid != -1 ) {
                 teams[ teamid ].push({
                     twitch   : ( displayData.additionalData.videoData[ instanceId ] || {} )[ `${memberType}|${memberId}` ],

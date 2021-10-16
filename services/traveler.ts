@@ -227,14 +227,7 @@ export interface DestinyUserSearchResponseDetail extends UserSearchResponseDetai
 
 export const getPlayersByName = async ( playerName: string ): Promise<DestinyUserSearchResponseDetail[]> => {
     const profileResponse = ( await apiGetBungieProfile( playerName.replace('#', '%23') ) ).Response;
-    const searchResults = profileResponse.searchResults as DestinyUserSearchResponseDetail[];
-
-    for ( let profile of searchResults ) {
-        const destinyProfileResponse = ( await apiGetProfile( profile.destinyMemberships[0].membershipType, profile.destinyMemberships[0].membershipId ) ).Response;
-        profile['characters']   = destinyProfileResponse.characters.data;
-        profile['profile']      = destinyProfileResponse.profile.data;
-    }
-    
+    const searchResults = profileResponse.searchResults as DestinyUserSearchResponseDetail[];    
     return searchResults;
 }
 

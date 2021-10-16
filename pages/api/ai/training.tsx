@@ -14,8 +14,8 @@ import { allowedSpecialEndpoints } from '../../../services/apiSecret';
 
 const initialModelOptions = {
     optimizer: "adam",
-    learningRate: 0.05,
-    epochs: 2000,
+    learningRate: 0.01,
+    epochs: 20000,
 };
 
 const OPTIMIZERS = {
@@ -41,9 +41,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
     }
 
-    const testPlayerMembershipId = "4611686018429254495";
+    const testPlayerMembershipId = "4611686018449365393"; //"4611686018429194556"// "4611686018429254495";
 
-    const history = await getHistory( 2, testPlayerMembershipId, "2305843009261515325", { page: 0, count: 200, mode: ActivityModeType.TrialsOfOsiris } ) as miniHistory[];
+    const history = await getHistory( 2, testPlayerMembershipId, "2305843009360934482", { page: 0, count: 50, mode: ActivityModeType.TrialsOfOsiris } ) as miniHistory[];
     console.log('got history', history.length);
 
     let data_set = [];
@@ -100,7 +100,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //fs.writeFileSync( 'data/ai_set.json', JSON.stringify( data_set ) );
 
     }
-    
 
     const test_input = data_set.shift() || { players: [] };
 
@@ -177,10 +176,9 @@ function createModel({ learningRate = 0.01, optimizer = "adam" }) {
 
     const model = sequential();
     model.add(layers.dense({ units : 18, activation: 'sigmoid', inputShape: [ 18 ] }));
-    model.add(layers.dense({ units : 36, activation: 'sigmoid' }));
+    model.add(layers.dense({ units : 50, activation: 'sigmoid' }));
+    model.add(layers.dense({ units : 100, activation: 'sigmoid' }));
     model.add(layers.dense({ units : 1, activation: 'sigmoid' }));
-    
-
 
     model.compile({
         optimizer: selectOptimizer(optimizer),
