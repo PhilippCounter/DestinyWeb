@@ -24,7 +24,25 @@ export default function PlayerName( props: IProps ) {
 
     const player = props.player as DestinyProfileData;
 
-    const firstChar = player.characterStats[ Object.keys(player.characterStats)[0] ];
+    const getCharWithLatestActivity = ( player: DestinyProfileData ): string => {
+        let highestCharId    = '';
+        let highestCharPriod;
+
+        if ( !player.lastMatches ) return Object.keys(player.characterStats)[0];
+
+        for ( const charId of Object.keys( player.lastMatches ) ) {
+            const date = new Date( player.lastMatches[charId][0].period );
+            if ( !highestCharPriod || date > highestCharPriod ) {
+                highestCharId    = charId;
+                highestCharPriod = date;
+            }
+        }
+
+        return highestCharId;
+    }
+
+    const firstCharId = getCharWithLatestActivity(player);
+    const firstChar = player.characterStats[ firstCharId ];
 
     const data: Series[] = [
         {
@@ -52,7 +70,7 @@ export default function PlayerName( props: IProps ) {
     const primaryAxis = useMemo( (): AxisOptions<DailyStars> => ({ getValue: datum => datum.date }), [] )
     const secondaryAxes = useMemo( (): AxisOptions<DailyStars>[] => [ { getValue: datum => datum.stars } ], [] )
 
-    const [ charId, setCharId ] = useState<string>( player.characters.data ? Object.keys( player.characters.data )[0] : '' );
+    const [ charId, setCharId ] = useState<string>( firstCharId );
     let character   = player.characters && player.characters.data ? player.characters.data[charId] : null;
 
 
