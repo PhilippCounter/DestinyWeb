@@ -1,9 +1,10 @@
 import { Container, Row, Col, Card } from 'react-bootstrap'
-import { getPlayerMembership, DestinyProfileData, apiPullDestinyManifest } from '../../../services/traveler'
+import { getPlayerMembership, DestinyProfileData, apiPullDestinyManifest, reactSelectDarkTheme } from '../../../services/traveler'
 import CharacterActivities from '../../../components/characterActivities'
 import { DestinyManifestSlice } from 'bungie-api-ts/destiny2';
 import { Chart, AxisOptions } from 'react-charts'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import Select from 'react-select'
 
 interface IProps {
     manifest : DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>,
@@ -44,35 +45,27 @@ export default function PlayerName( props: IProps ) {
     const firstCharId = getCharWithLatestActivity(player);
     const firstChar = player.characterStats[ firstCharId ];
 
-    const data: Series[] = [
-        {
-            label: 'Deaths',
-            data: [
-                ...( firstChar.allPvP.daily || [] ).map( ( dayData ) => ({ date: new Date( dayData.period ), stars : dayData.values.deaths.basic.value }) ),
-                {
-                    date : new Date(),
-                    stars : 0,
-                },
-            ],
-        },
-        {
-            label: 'Kills',
-            data: [
-                ...( firstChar.allPvP.daily || [] ).map( ( dayData ) => ({ date: new Date( dayData.period ), stars : dayData.values.kills.basic.value }) ),
-                {
-                    date : new Date(),
-                    stars : 0,
-                },
-            ],
-        },
-    ];
-
-    const primaryAxis = useMemo( (): AxisOptions<DailyStars> => ({ getValue: datum => datum.date }), [] )
-    const secondaryAxes = useMemo( (): AxisOptions<DailyStars>[] => [ { getValue: datum => datum.stars } ], [] )
-
     const [ charId, setCharId ] = useState<string>( firstCharId );
     let character   = player.characters && player.characters.data ? player.characters.data[charId] : null;
 
+    const valueTypeListToSeries = ( valueTypes: string[] ): Series[] => {
+        return valueTypes.map( ( valueType ) => {
+            const data = ( player.characterStats[ charId ].allPvP.daily || [] ).map( ( dayData ) => ({ date: new Date( dayData.period ), stars : dayData.values[valueType].basic.value }));
+            return {
+                label: valueType,
+                data: data.length > 0 ? data : [{ date: new Date(), stars: 0 }],
+            };
+        } );
+    }
+
+    const deafultValueTypes = [ 'killsDeathsRatio' ];
+    const [ chartData, setChartData ] = useState<Series[]>( valueTypeListToSeries(deafultValueTypes) );
+    const primaryAxis   = useMemo( (): AxisOptions<DailyStars> => ({ getValue: datum => datum.date }), [] )
+    const secondaryAxes = useMemo( (): AxisOptions<DailyStars>[] => [ { getValue: datum => datum.stars } ], [] )
+
+    useEffect(() => {
+        setChartData( valueTypeListToSeries( chartData.map((el) => el.label) ) )
+    },[charId]);
 
     return <Container fluid>
         <Row>
@@ -113,13 +106,24 @@ export default function PlayerName( props: IProps ) {
                     </Card>
                 </Row>
                 <Row className="mt-3">
-                    <Card style={{ height: '500px', padding: '20px', color: '#FFF' }} >
+                    <Card style={{ height: '600px', padding: '20px', color: '#FFF' }} >
+                        <div style={{ marginBottom: '10px' }}>
+                            <Select 
+                                className="basic-multi-select"
+                                defaultValue={ deafultValueTypes.map( (el) => ({ label: el, value: el }) ) }
+                                options={ Object.keys( firstChar.allPvP.daily[0].values ).map( (el) => ({ label: el, value: el }) ) }
+                                theme={reactSelectDarkTheme}
+                                onChange={ (list) => setChartData( valueTypeListToSeries( list.map((el) => el.value ) ) ) }
+                                isMulti
+                            />
+                        </div>
                         <Card.Body>
+                            
                             <Chart 
                                 key={ charId }
                                 style={{ color: '#FFF' }}
                                 options={{
-                                    data,
+                                    data: chartData,
                                     primaryAxis,
                                     secondaryAxes,
                                     dark : true

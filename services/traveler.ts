@@ -40,6 +40,7 @@ import {
 
 import axios, { AxiosPromise } from 'axios';
 import { apiSecret } from './apiSecret';
+import { Theme } from 'react-select';
 
 export const baseUrl = typeof Window === 'undefined' ? process.env.baseUrl ? process.env.baseUrl : 'http://localhost:3000' : '';
 
@@ -281,4 +282,35 @@ export const getHistory = async ( membershipType: BungieMembershipType|undefined
     if ( !membershipType || !destinyMembershipId ) return [];
     const activityResponse = ( await apiGetActivityHistory( membershipType,destinyMembershipId, characterId, params ) ).Response; 
     return activityResponse.activities as HistoryActivity[];
+}
+
+export const reactSelectDarkTheme = ( theme: Theme ): Theme => {
+    return {
+        ...theme,
+        borderRadius: 5,
+        colors: {
+            ...theme.colors,
+            
+            primary     : '#222',
+            primary25   : '#222',
+            primary50   : '#222',
+            primary75   : '#222',
+
+            neutral0    : '#3b3b3b',
+            neutral5    : '#3b3b3b',
+            neutral10   : '#222',
+            neutral20   : '#3b3b3b',
+            neutral30   : '#3b3b3b',
+            neutral40   : '#3b3b3b',
+            neutral50   : '#3b3b3b',
+            neutral60   : '#3b3b3b',
+            neutral70   : '#3b3b3b',
+            neutral80   : '#FFF',
+            neutral90   : '#3b3b3b',
+            
+            danger      : '#F00',
+            dangerLight : '#F00',
+
+        },
+    };
 }
