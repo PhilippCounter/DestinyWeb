@@ -85,7 +85,7 @@ export default function PlayerSearch() {
         { resultPlayers && resultPlayers.map( ( player: DestinyUserSearchResponseDetail, idx: number ) => {
             const playerIcon = playerIcons[ player.bungieGlobalDisplayName + '#' + player.bungieGlobalDisplayNameCode ];
             return <Link 
-                href={'/getPlayer/' + player.profile?.userInfo.membershipType + '/' + player.profile?.userInfo.membershipId }
+                href={'/getPlayer/' + player.destinyMemberships[0].membershipType + '/' + player.destinyMemberships[0].membershipId }
                 key={player.bungieGlobalDisplayName + '#' + player.bungieGlobalDisplayNameCode}
             >
                 <Row className="mt-3" style={{ cursor: 'pointer' }} onClick={ () => setLoading(true) } >
