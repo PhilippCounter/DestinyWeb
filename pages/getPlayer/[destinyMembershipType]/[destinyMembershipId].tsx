@@ -1,14 +1,16 @@
-import { Container, Row, Col, Card } from 'react-bootstrap'
-import { getPlayerMembership, DestinyProfileData, apiPullDestinyManifest, reactSelectDarkTheme } from '../../../services/traveler'
+import { Container, Row, Col, Card, Table } from 'react-bootstrap'
+import { getPlayerMembership, DestinyProfileData, apiPullDestinyManifest, reactSelectDarkTheme, apiAllGetHistoricalStats, apiGetHistoricalStatsDefinition } from '../../../services/traveler'
 import CharacterActivities from '../../../components/characterActivities'
 import { DestinyManifestSlice } from 'bungie-api-ts/destiny2';
 import { Chart, AxisOptions } from 'react-charts'
 import { useEffect, useMemo, useState } from 'react'
 import Select from 'react-select'
+import { BungieMembershipType, DestinyHistoricalStatsValue, DestinyHistoricalStatsDefinition, DestinyMetricDefinition, DestinyMetricComponent } from 'bungie-api-ts/destiny2';
 
 interface IProps {
-    manifest : DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>,
-    player   : DestinyProfileData
+    manifest        : DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>,
+    player          : DestinyProfileData,
+    metricsWithDefinition : { metric: DestinyMetricComponent, definition: DestinyMetricDefinition }[],
 }
 
 type DailyStars = {
@@ -95,42 +97,75 @@ export default function PlayerName( props: IProps ) {
             </div>
             <Col>
                 <Row>
-                    <Card>
-                        <Card.Body>
-                            <img style={{ float: 'left', marginRight: '20px' }} src={ "https://www.bungie.net/" + ( player.characters.data ? player.characters.data[ Object.keys(player.characters.data)[0] ].emblemPath : '' ) }></img>
-                            <div>
-                                <div style={{ marginBottom: '10px', fontSize: '30px', fontWeight: 'bold' }}>{player.profile.data?.userInfo.bungieGlobalDisplayName}#{player.profile.data?.userInfo.bungieGlobalDisplayNameCode}</div>
-                                <div style={{ marginBottom: '10px', fontSize: '20px' }}>{player.profile.data?.userInfo.membershipType} - {player.profile.data?.userInfo.membershipId}</div>
-                            </div>
-                        </Card.Body>
-                    </Card>
+                    <Col>
+                        <Card>
+                            <Card.Body>
+                                <img style={{ float: 'left', marginRight: '20px' }} src={ "https://www.bungie.net/" + ( player.characters.data ? player.characters.data[ Object.keys(player.characters.data)[0] ].emblemPath : '' ) }></img>
+                                <div>
+                                    <div style={{ marginBottom: '10px', fontSize: '30px', fontWeight: 'bold' }}>{player.profile.data?.userInfo.bungieGlobalDisplayName}#{player.profile.data?.userInfo.bungieGlobalDisplayNameCode}</div>
+                                    <div style={{ marginBottom: '10px', fontSize: '20px' }}>{player.profile.data?.userInfo.membershipType} - {player.profile.data?.userInfo.membershipId}</div>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
                 </Row>
                 <Row className="mt-3">
-                    <Card style={{ height: '600px', padding: '20px', color: '#FFF' }} >
-                        <div style={{ marginBottom: '10px' }}>
-                            <Select 
-                                className="basic-multi-select"
-                                defaultValue={ deafultValueTypes.map( (el) => ({ label: el, value: el }) ) }
-                                options={ Object.keys( firstChar.allPvP.daily[0].values ).map( (el) => ({ label: el, value: el }) ) }
-                                theme={reactSelectDarkTheme}
-                                onChange={ (list) => setChartData( valueTypeListToSeries( list.map((el) => el.value ) ) ) }
-                                isMulti
-                            />
-                        </div>
-                        <Card.Body>
-                            
-                            <Chart 
-                                key={ charId }
-                                style={{ color: '#FFF' }}
-                                options={{
-                                    data: chartData,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                    dark : true
-                                }}
-                            />
-                        </Card.Body>
-                    </Card>
+                    <Col>
+                        <Card>
+                            <Card.Body>Character Stats</Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row className="mt-3">
+                    <Col>
+                        <Card style={{ height: '600px', padding: '20px', color: '#FFF' }} >
+                            <div style={{ marginBottom: '10px' }}>
+                                <Select 
+                                    className="basic-multi-select"
+                                    defaultValue={ deafultValueTypes.map( (el) => ({ label: el, value: el }) ) }
+                                    options={ Object.keys( firstChar.allPvP.daily[0].values ).map( (el) => ({ label: el, value: el }) ) }
+                                    theme={reactSelectDarkTheme}
+                                    onChange={ (list) => setChartData( valueTypeListToSeries( list.map((el) => el.value ) ) ) }
+                                    isMulti
+                                />
+                            </div>
+                            <Card.Body>
+                                <Chart 
+                                    key={ charId }
+                                    style={{ color: '#FFF' }}
+                                    options={{
+                                        data: chartData,
+                                        primaryAxis,
+                                        secondaryAxes,
+                                        dark : true
+                                    }}
+                                />
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row className="mt-3">
+                    <Col>
+                        <Card>
+                            <Card.Body>Metrics</Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row className="row-cols-auto">
+                    {
+                        props.metricsWithDefinition.map( (metric,idx) => <Col key={idx} className="mt-3">
+                            <Card style={{ width: '250px' }}>
+                                <Card.Header style={{ fontSize: '12px', height: '53px' }}>
+                                    { metric.definition.displayProperties.name }
+                                </Card.Header>
+                                <Card.Body>
+                                    <div style={{ float: 'left' }}><img src={ "https://www.bungie.net/" + metric.definition.displayProperties.icon } /></div>
+                                    <div style={{ textAlign: 'right' }}>{ metric.metric.objectiveProgress.progress }</div>
+                                </Card.Body>
+                            </Card>
+                        </Col> )
+                    }
+
                 </Row>
             </Col>
         </Row>
@@ -141,7 +176,10 @@ export default function PlayerName( props: IProps ) {
 }
 
 export async function getServerSideProps( { params }: any ) {
-    var manifest = await apiPullDestinyManifest();
-    var player = await getPlayerMembership( params.destinyMembershipType, params.destinyMembershipId );
-    return { props: { manifest, player } };
+    const manifest = await apiPullDestinyManifest();
+    const player   = await getPlayerMembership( params.destinyMembershipType, params.destinyMembershipId );
+    const metrics  = player.metrics.data?.metrics || {};
+    const metricsWithDefinition = Object.keys( metrics ).map( (hash) => ({ metric: metrics[parseInt(hash)], definition: manifest.DestinyMetricDefinition[parseInt(hash)] }) ) as { metric: DestinyMetricComponent, definition: DestinyMetricDefinition }[];
+
+    return { props: { manifest, player, metricsWithDefinition } };
 }

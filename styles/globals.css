@@ -38,6 +38,7 @@ a {
   float: left;
   margin: 10px;
   cursor: pointer;
+  border-radius: 5px;
 }
 
 .character-buttons.active {

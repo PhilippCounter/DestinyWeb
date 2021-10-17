@@ -19,7 +19,11 @@ import {
     getHistoricalStatsForAccount,
     DestinyHistoricalStatsAccountResult,
     getHistoricalStats,
-    DestinyHistoricalStatsByPeriod
+    DestinyHistoricalStatsByPeriod,
+    DestinyActivityModeType,
+    DestinyStatsGroupType,
+    getHistoricalStatsDefinition,
+    DestinyHistoricalStatsDefinition
 } from 'bungie-api-ts/destiny2';
 
 import { 
@@ -75,6 +79,7 @@ export const apiGetProfile = ( membershipType: BungieMembershipType, destinyMemb
         components          : [ 
             ComponentType.Profiles,
             ComponentType.Characters,
+            ComponentType.Metrics
         ],
     } );
 }
@@ -114,11 +119,11 @@ export const apiGetPostGameCarnageReport = ( activityId: string ): Promise<Serve
     } );
 }
 
-export const apiGetDestinyManifest = async ( ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>> => {
+export const apiGetDestinyManifest = async ( ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition" | "DestinyMetricDefinition")[]>> => {
     const destinyManifest = ( await getDestinyManifest($http) ).Response;
     return getDestinyManifestSlice( $http, {
         destinyManifest,
-        tableNames      : [ 'DestinyActivityDefinition', 'DestinyClassDefinition' ],
+        tableNames      : [ 'DestinyActivityDefinition', 'DestinyClassDefinition', 'DestinyMetricDefinition' ],
         language        : 'en',
     } );
 }
@@ -130,18 +135,24 @@ export const apiGetMembershipDataById = ( membershipType: BungieMembershipType, 
     } );
 }
 
-export const apiGetHistoricalStatsForAccount = ( membershipType: BungieMembershipType, destinyMembershipId: string ): Promise<ServerResponse<DestinyHistoricalStatsAccountResult>> => {
+export const apiGetHistoricalStatsForAccount = ( membershipType: BungieMembershipType, destinyMembershipId: string, groups: DestinyStatsGroupType[]  ): Promise<ServerResponse<DestinyHistoricalStatsAccountResult>> => {
     return getHistoricalStatsForAccount( $http, {
         destinyMembershipId,
         membershipType,
+        groups,
     } );
 }
+
+export const apiGetHistoricalStatsDefinition = ( ): Promise<ServerResponse<{ [key: string]: DestinyHistoricalStatsDefinition }>> => {
+    return getHistoricalStatsDefinition( $http );
+}
+
 
 function toDateTime ( date: Date ) {
     return date.toISOString().slice(0, 19).replace('T', ' ')
 }
 
-export const apiGetHistoricalStats = ( membershipType: BungieMembershipType, destinyMembershipId: string, characterId: string ): Promise<ServerResponse<{ [mode: string]: DestinyHistoricalStatsByPeriod }>> => {
+export const apiGetHistoricalStats = ( membershipType: BungieMembershipType, destinyMembershipId: string, characterId: string, modes?: DestinyActivityModeType[], groups?: DestinyStatsGroupType[] ): Promise<ServerResponse<{ [mode: string]: DestinyHistoricalStatsByPeriod }>> => {
     let end_date    = new Date();
     let start_date  = new Date();
     
@@ -151,12 +162,24 @@ export const apiGetHistoricalStats = ( membershipType: BungieMembershipType, des
         destinyMembershipId,
         membershipType,
         characterId,
-        periodType : PeriodType.Daily,
-        dayend : toDateTime( end_date ),
-        daystart : toDateTime( start_date ),
+        modes,
+        groups,
+        periodType  : PeriodType.Daily,
+        dayend      : toDateTime( end_date ),
+        daystart    : toDateTime( start_date ),
     } );
 }
 
+export const apiAllGetHistoricalStats = ( membershipType: BungieMembershipType, destinyMembershipId: string, characterId: string, modes?: DestinyActivityModeType[], groups?: DestinyStatsGroupType[] ): Promise<ServerResponse<{ [mode: string]: DestinyHistoricalStatsByPeriod }>> => {
+    return getHistoricalStats( $http, {
+        destinyMembershipId,
+        membershipType,
+        characterId,
+        modes,
+        groups,
+        periodType  : PeriodType.AllTime,
+    } );
+}
 
 
 
@@ -165,17 +188,22 @@ export const storeDestinyManifest = async ( fs: any ): Promise<void> => {
     fs.writeFileSync( 'data/manifest.json', JSON.stringify( manifest ) );
 }
 
-export const pullDestinyManifest = async ( fs: any ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>> => {
+export const pullDestinyManifest = async ( fs: any ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition" | "DestinyMetricDefinition")[]>> => {
     let file = fs.readFileSync( 'data/manifest.json', 'utf8' );
     return JSON.parse( file );
 }
 
-export const apiPullDestinyManifest = async ( ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition")[]>> => {
+export const apiPullDestinyManifest = async ( ): Promise<DestinyManifestSlice<("DestinyActivityDefinition" | "DestinyClassDefinition" | "DestinyMetricDefinition")[]>> => {
     return (await axios({
         method: 'GET',
         url: baseUrl + '/api/manifest',
     }) ).data;
 }
+
+
+
+
+
 
 interface ITwitchUser {
     id: string,
@@ -264,7 +292,7 @@ export const getPlayerMembership = async ( destinyMembershipType: BungieMembersh
             if ( !charData ) continue;
 
             let character = charData[characterId];
-            profile['characterStats'][characterId] = ( await apiGetHistoricalStats( character.membershipType, character.membershipId, characterId ) ).Response;
+            profile['characterStats'][characterId] = ( await apiGetHistoricalStats( character.membershipType, character.membershipId, characterId, [ ActivityModeType.AllPvP ] ) ).Response;
             profile['lastMatches'][characterId] = await getHistory( character.membershipType, character.membershipId, characterId, { page: 0, count: 10, mode: ActivityModeType.AllPvP } );
 
         }
