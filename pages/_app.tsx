@@ -53,10 +53,10 @@ function MyApp({ Component, pageProps, allowedSpecialEndpoints }: IProps) {
       <Menu iconShape="square">
         <MenuItem ><Link href="/" >Destiny Web Api</Link></MenuItem>
         <SubMenu title="User Tools" >
-          <MenuItem className="mt-3" ><Link href="/getPlayer" >Search Player</Link></MenuItem>
-          <MenuItem className="mt-3" ><Link href="/predictResults" >Match Prediction</Link></MenuItem>
+          <MenuItem><Link href="/getPlayer" >Search Player</Link></MenuItem>
         </SubMenu>
         { allowedSpecialEndpoints && <SubMenu title="Admin Tools" >
+          <MenuItem><Link href="/predictResults" >Match Prediction</Link></MenuItem>
           <MenuItem style={{ cursor: 'pointer' }} onClick={ () => { setLoading(true); storeManifest() } }>
             <label style={{float:'left', marginRight: '10px', cursor: 'pointer'}}>Update Manifest</label>
           </MenuItem>
