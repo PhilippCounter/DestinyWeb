@@ -135,11 +135,10 @@ export const apiGetMembershipDataById = ( membershipType: BungieMembershipType, 
     } );
 }
 
-export const apiGetHistoricalStatsForAccount = ( membershipType: BungieMembershipType, destinyMembershipId: string, groups: DestinyStatsGroupType[]  ): Promise<ServerResponse<DestinyHistoricalStatsAccountResult>> => {
+export const apiGetHistoricalStatsForAccount = ( membershipType: BungieMembershipType, destinyMembershipId: string ): Promise<ServerResponse<DestinyHistoricalStatsAccountResult>> => {
     return getHistoricalStatsForAccount( $http, {
         destinyMembershipId,
         membershipType,
-        groups,
     } );
 }
 
